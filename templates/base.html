@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поисковик фильмов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Стили для кнопки Home */
+        .home-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        .movie-card {
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .movie-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 2px solid #ddd;
+        }
+        .movie-card .card-body {
+            padding: 15px;
+        }
+        .movie-card h5 {
+            margin-bottom: 10px;
+            font-size: 1.25rem;
+            color: #333;
+        }
+        .movie-card .description {
+            position: relative;
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.5;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .movie-card .description .visible {
+            display: inline;
+        }
+        .movie-card .description .more {
+            display: none;
+        }
+        .movie-card .description.expanded .more {
+            display: inline;
+        }
+        .movie-card .description .fade {
+            position: relative;
+            display: inline;
+        }
+        .movie-card .description .fade::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 1.5em;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 50%);
+        }
+        .movie-card .description.expanded .fade::after {
+            display: none;
+        }
+        .movie-card .btn-like {
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .movie-card .btn-like:hover {
+            background-color: #ff6b81;
+        }
+        .movie-card .btn-view {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .movie-card .btn-view:hover {
+            background-color: #0056b3;
+        }
+        .movie-card .age-rating {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #f8f9fa;
+            border-color: #ddd;
+        }
+        .page-input {
+            width: 60px;
+            margin: 0 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="btn btn-success home-button">Главная</a>
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Поисковик фильмов</h1>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form method="POST" class="d-flex">
+                    <input type="text" name="search_input" class="form-control me-2" placeholder="Сосед инопланетянин..." required>
+                    <button type="submit" class="btn btn-success">Поиск...</button>
+                </form>
+            </div>
+        </div>
+
+        {% if search_query %}
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-12">
+                <h2 class="mb-3">Результат поиска по запросу "{{ search_query }}":</h2>
+                {% if items %}
+                    <div class="row">
+                        {% for item in items %}
+                        <div class="col-md-3">
+                            <div class="movie-card">
+                                <img src="{{ item.banner }}" alt="{{ item.name }}">
+                                <div class="card-body">
+                                    <h5>{{ item.name }}</h5>
+                                    <div class="description" onclick="toggleDescription(this)">
+                                        <span class="visible">{{ item.description | truncate(20, true, '...') }}</span>
+                                        <span class="more">{{ item.description }}</span>
+                                        <span class="fade"></span>
+                                    </div>
+                                    <p><strong>IMDb Rating:</strong> {{ item.imdb_rating }}</p>
+                                    <p><strong>Год выпуска:</strong> {{ item.published }}</p>
+                                    <p><strong>Жанр фильма:</strong> {{ item.theme }}</p>
+                                    <button class="btn-like">Like</button>
+                                    <a href="{{ item.url }}" target="_blank" class="btn-view">View</a>
+                                </div>
+                                <div class="age-rating">
+                                    {{ item.age_rating }}+
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning" role="alert">
+                        No results found.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-12">
+                <h2 class="mb-3">Рекомендованно вам:</h2>
+                <div class="row">
+                    {% for item in recommended_items %}
+                    <div class="col-md-3">
+                        <div class="movie-card">
+                            <img src="{{ item.banner }}" alt="{{ item.name }}">
+                            <div class="card-body">
+                                <h5>{{ item.name }}</h5>
+                                <div class="description" onclick="toggleDescription(this)">
+                                    <span class="visible">{{ item.description | truncate(20, true, '...') }}</span>
+                                    <span class="more">{{ item.description }}</span>
+                                    <span class="fade"></span>
+                                </div>
+                                <p><strong>IMDb Rating:</strong> {{ item.imdb_rating }}</p>
+                                <p><strong>Год выпуска:</strong> {{ item.published }}</p>
+                                <p><strong>Жанр фильма:</strong> {{ item.theme }}</p>
+                                <button class="btn-like">Like</button>
+                                <a href="{{ item.url }}" target="_blank" class="btn-view">View</a>
+                            </div>
+                            <div class="age-rating">
+                                {{ item.age_rating }}+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+            <div class="row mt-5">
+                <h2 class="mb-4">Список всех фильмов</h2>
+                {% for movie in movies %}
+                <div class="col-md-3">
+                    <div class="movie-card">
+                        <img src="{{ movie.banner }}" alt="{{ movie.name }}">
+                        <div class="card-body">
+                            <h5>{{ movie.name }}</h5>
+                            <div class="description" onclick="toggleDescription(this)">
+                                <span class="visible">{{ movie.description | truncate(20, true, '...') }}</span>
+                                <span class="more">{{ movie.description }}</span>
+                                <span class="fade"></span>
+                            </div>
+                            <p><strong>IMDb Rating:</strong> {{ movie.imdb_rating }}</p>
+                            <p><strong>Год выпуска:</strong> {{ movie.published }}</p>
+                            <p><strong>Жанр фильма:</strong> {{ movie.theme }}</p>
+                            <button class="btn-like">Like</button>
+                            <a href="{{ movie.url }}" target="_blank" class="btn-view">View</a>
+                        </div>
+                        <div class="age-rating">
+                            {{ movie.age_rating }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main', page=page-1) }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for p in range(1, 5) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('main', page=p) }}">{{ p }}</a>
+                </li>
+                {% endfor %}
+
+                <li class="page-item">
+                    <input type="number" class="form-control page-input" id="pageInput" min="1" max="{{ total_pages }}" placeholder="{{ page }}">
+                </li>
+
+                {% if total_pages > 4 %}
+                <li class="page-item {% if total_pages == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('main', page=total_pages) }}">{{ total_pages }}</a>
+                </li>
+                {% endif %}
+
+                {% if page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main', page=page+1) }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleDescription(element) {
+            element.classList.toggle('expanded');
+        }
+
+        const pageInput = document.getElementById('pageInput');
+        pageInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const pageNumber = parseInt(pageInput.value);
+                if (pageNumber >= 1 && pageNumber <= {{ total_pages }}) {
+                    window.location.href = `{{ url_for('main') }}?page=${pageNumber}`;
+                } else {
+                    alert(`Please enter a valid page number between 1 and {{ total_pages }}.`);
+                }
+            }
+        });
+    </script>
+<script>
+    function likeMovie(index, genres) {
+        fetch('/like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                movie_index: index,
+                genres: genres,
+                exclude_indices: []
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateRecommendedMovies(data);
+        });
+    }
+
+    function updateRecommendedMovies(movies) {
+        const recommendedSection = document.querySelector('.recommended-movies');
+        recommendedSection.innerHTML = '';
+
+        movies.forEach(movie => {
+            const movieCard = `
+                <div class="col-md-3">
+                    <div class="movie-card">
+                        <img src="${movie.banner}" alt="${movie.name}">
+                        <div class="card-body">
+                            <h5>${movie.name}</h5>
+                            <div class="description" onclick="toggleDescription(this)">
+                                <span class="visible">${movie.description.substring(0, 20)}...</span>
+                                <span class="more">${movie.description}</span>
+                                <span class="fade"></span>
+                            </div>
+                            <p><strong>IMDb Rating:</strong> ${movie.imdb_rating}</p>
+                            <p><strong>Год выпуска:</strong> ${movie.published}</p>
+                            <p><strong>Жанр фильма:</strong> ${movie.theme}</p>
+                            <button class="btn-like" onclick="likeMovie(${movie.index}, '${movie.theme}')">Like</button>
+                            <a href="${movie.url}" target="_blank" class="btn-view">View</a>
+                        </div>
+                        <div class="age-rating">
+                            ${movie.age_rating}+
+                        </div>
+                    </div>
+                </div>
+            `;
+            recommendedSection.innerHTML += movieCard;
+        });
+    }
+
+    document.querySelectorAll('.btn-like').forEach(button => {
+        button.addEventListener('click', function() {
+            const movieIndex = this.dataset.index;
+            const movieGenres = this.dataset.genres.split(',');
+            likeMovie(movieIndex, movieGenres);
+        });
+    });
+</script>
+</body>
+</html>
