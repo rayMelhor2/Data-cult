@@ -1,9 +1,11 @@
 # Data-cult
 Search film
-1.Создайте среду программирования и импортируйте туда файл app.py, а так же папку templates/base.html, в корневую папку расположите dataset2.csv и файл movie_embeddings.npy
-2. Установка pip install pandas bs4 requests numpy scikit-learn flask sentence_transformers
+1.Создайте среду программирования и импортируйте туда файл app.py, а так же папку templates/base.html, в корневую папку расположите dataset.csv и файл movie_embeddings.npy
+*Если потребуется, измените путь к датасету изменив переменную DATA_FILE на нужный вам путь. Измените путь к файлу векторов изменив переменную EMBEDDINGS_FILE на нужный вам путь.
+2. Откройте файл app.py и установка pip install pandas bs4 requests numpy scikit-learn flask sentence_transformers
+по желанию измените переменную MOVIES_PER_PAGE, она отвечает за количество фильмов на одной странице
 3. запустите программу
-4.Перейдите в по айпи 127.0.0.1:5000
+4.Перейдите по айпи 127.0.0.1:5000
 5.Пользуйтесь поисковиком
 
 ВСЕ ОСТАЛЬНЫЕ ФАЙЛЫ НЕ ИСПОЛЬЗУЮТСЯ ДЛЯ ЗАПУСКА ПРОЕКТА!
